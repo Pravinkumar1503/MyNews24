@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyNews24 - News Portal</title>
+
+  <!-- Bootstrap 5 CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    /* ---------- GENERAL ---------- */
+    body {
+      margin: 0;
+      padding: 0;
+      background: palevioletred; /* unified background */
+      /* color: #e6eef2; */
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    a { text-decoration: none; }
+
+    /* ---------- AUTH (FULL PAGE) ---------- */
+    .auth-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .auth-card {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.04);
+      width: 100%;
+      max-width: 420px;
+    }
+    .auth-card h3 {
+      text-align: center;
+      margin-bottom: 1.25rem;
+      color: #0dcaf0;
+    }
+    .auth-card .form-control {
+      background-color: #1a1f2e;
+      color: #fff;
+      border: 1px solid #0dcaf0;
+    }
+    .auth-card .form-control:focus {
+      box-shadow: 0 0 6px #0dcaf0;
+    }
+    .auth-card .btn {
+      background-color: #0dcaf0;
+      border: none;
+      font-weight: 600;
+      color: #071018;
+    }
+    .auth-switch { text-align: center; margin-top: 1rem; color: #cfeff6; }
+    .auth-switch a { color: #0dcaf0; cursor: pointer; }
+
+    /* ---------- NAVBAR ---------- */
+    .navbar {
+      background-color: #222831 !important;
+    }
+    .navbar-brand { font-weight: 700; color: #00adb5 !important; font-size: 1.4rem; }
+    .nav-link { color: #eeeeee !important; margin-right: 0.6rem; }
+    .nav-link:hover { color: #00adb5 !important; }
+
+    /* ---------- SEARCH ---------- */
+    .search-box {
+      border-radius: 25px;
+      padding: 0.3rem 1rem;
+      border: none;
+      width: 200px;
+    }
+    @media (max-width: 768px) {
+      .search-box { width: 100%; margin-top: 10px; }
+    }
+
+    /* ---------- CAROUSEL ---------- */
+    .carousel-item {
+      height: 70vh;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      animation: zoomIn 20s linear infinite;
+    }
+    @keyframes zoomIn {
+      0% { background-size: 100%; }
+      50% { background-size: 105%; }
+      100% { background-size: 100%; }
+    }
+    .carousel-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      height: 100%; width: 100%;
+      background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.15));
+    }
+    .carousel-caption {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%; max-width: 760px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(6px);
+      color: #fff; z-index: 2;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    }
+    .carousel-caption h3 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .carousel-caption p { color: #e6eef2; margin-bottom: 0.7rem; }
+
+    .carousel-indicators [data-bs-target] {
+      background-color: #00adb5;
+      width: 12px; height: 12px; border-radius: 50%;
+      margin: 0 6px;
+    }
+
+    @media (max-width: 768px) {
+      .carousel-item { height: 50vh; }
+      .carousel-caption h3 { font-size: 1.2rem; }
+      .carousel-caption { padding: 14px; bottom: 12px; }
+    }
+
+    /* ---------- SECTIONS & TABS ---------- */
+    .section-heading { text-align: center; font-size: 2rem; color: #00ffc6; margin: 36px 0 18px; }
+    .nav-tabs-custom { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+    .nav-tabs-custom a {
+      padding: 8px 18px; border-radius: 30px; background: transparent; color: #fff;
+      border: 2px solid #1e90ff; font-weight: 600;
+    }
+    .nav-tabs-custom a:hover { background: linear-gradient(135deg,#7f00ff,#e100ff); box-shadow:0 0 12px rgba(127,0,255,0.35); }
+
+    .category-tab { display:none; }
+    .category-tab:target { display:block; animation: fadeIn 0.6s ease; }
+    .category-tab:first-of-type { display:block; }
+    @keyframes fadeIn { from {opacity:0; transform: translateY(16px);} to {opacity:1; transform: translateY(0);} }
+
+    /* ---------- NEWS CARDS ---------- */
+    .news-card { background: rgba(255,255,255,0.02); border:none; border-radius:14px; overflow:hidden; transition:0.25s; box-shadow:0 0 12px rgba(0,255,198,0.03); }
+    .news-card:hover { transform: translateY(-6px); box-shadow:0 18px 40px rgba(0,255,198,0.14); }
+    .news-card img { height: 200px; object-fit:cover; width:100%; }
+
+    /* ---------- FEATURED CARDS ---------- */
+    .card { border:none; border-radius:14px; overflow:hidden; }
+    .card-img-top { height:200px; object-fit:cover; transition:transform .4s ease; }
+    .card:hover .card-img-top { transform: scale(1.05); }
+    .icon-top-left, .icon-top-right {
+      position:absolute; top:10px; background: rgba(255,255,255,0.9); padding:6px 9px; border-radius:50%;
+      font-size:1rem; color:#333; opacity:0; transition:0.25s;
+    }
+    .icon-top-left { left:10px; }
+    .icon-top-right { right:10px; }
+    .card:hover .icon-top-left, .card:hover .icon-top-right { opacity:1; }
+
+    /* ---------- SIDEBAR ---------- */
+    .sidebar-section { background: rgba(255,255,255,0.95); border-radius:12px; padding:18px; margin-bottom:20px; color:#222; position:relative; overflow:hidden; }
+    .sidebar-title { font-size:1.2rem; font-weight:700; color:#0077b6; margin-bottom:10px; position:relative; }
+    .trending-item { display:flex; gap:10px; align-items:center; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.06); transition:0.25s; }
+    .trending-icon { font-size:1.1rem; color:#0077b6; flex:0 0 28px; }
+    .trending-text { font-size:0.98rem; color:#333; }
+
+    /* ---------- SUBSCRIBE CARD ---------- */
+    .glass-card { background: rgba(255,255,255,0.06); border-radius:12px; backdrop-filter: blur(8px); padding:22px; }
+    .btn-subscribe { background-color: #0dcaf0; color: #071018; font-weight:700; border:none; }
+    .btn-subscribe:hover { background-color:#08b4d6; }
+
+    /* ---------- MODAL POP ANIM ---------- */
+    .pop-animation { animation: popIn 0.35s ease-out, bounce 0.9s ease-in-out 0.35s; }
+    @keyframes popIn { 0% { transform: scale(0.6); opacity:0; } 70% { transform: scale(1.05); opacity:1; } 100% { transform: scale(1); } }
+    @keyframes bounce { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-8px);} }
+
+    /* ---------- FOOTER ---------- */
+    .footer { background: linear-gradient(135deg,#03045e,#0077b6); color:#ffffff; padding:48px 0 24px; }
+    .footer h5 { color:#90e0ef; font-weight:700; margin-bottom:14px; }
+    .footer a { color:#caf0f8; display:block; margin-bottom:8px; }
+    .footer-bottom { border-top:1px solid rgba(255,255,255,0.08); margin-top:18px; padding-top:14px; text-align:center; font-size:.9rem; color:#d9eef7; }
+    @media (max-width:767px){
+      .card-img-top { height:160px; }
+      .news-card img { height:160px; }
+    }
+
+    /* ---------- COUNTER ---------- */
+    .section-container { display:flex; justify-content:center; padding:30px; }
+    .counter-box { background: rgba(255,255,255,0.04); padding:26px; border-radius:12px; text-align:center; width:260px; }
+    .counter { font-size:2rem; font-weight:800; color:#fff; }
+    .label { font-size:1rem; margin-top:8px; color:#0dcaf0; font-weight:600; }
+  </style>
+</head>
+<body>
+
+<!-- ========== AUTH (full page) ========== -->
+<div id="authSection" class="auth-wrapper">
+  <div class="auth-card">
+    <h3 id="authTitle">Login</h3>
+    <form id="authForm">
+      <div class="mb-3">
+        <input type="email" id="email" class="form-control" placeholder="Email" required>
+      </div>
+      <div class="mb-3">
+        <input type="password" id="password" class="form-control" placeholder="Password" required>
+      </div>
+      <button type="submit" class="btn w-100" id="authBtn">Login</button>
+    </form>
+    <div class="auth-switch mt-3">
+      <span id="switchText">Don't have an account? </span>
+      <a id="switchLink">Register</a>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MAIN SITE CONTENT (hidden until login) ========== -->
+<div id="mainContent" style="display:none;">
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="#">MyNews24</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">World</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Sports</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Tech</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Entertainment</a></li>
+        </ul>
+
+        <div class="d-flex align-items-center gap-2">
+          <input class="form-control search-box" placeholder="Search" aria-label="Search">
+          <button class="btn btn-danger btn-sm" id="logoutBtn">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CAROUSEL -->
+  <div id="megaCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4500">
+    <div class="carousel-indicators">
+      <button type="button" data-bs-target="#megaCarousel" data-bs-slide-to="0" class="active"></button>
+      <button type="button" data-bs-target="#megaCarousel" data-bs-slide-to="1"></button>
+      <button type="button" data-bs-target="#megaCarousel" data-bs-slide-to="2"></button>
+      <button type="button" data-bs-target="#megaCarousel" data-bs-slide-to="3"></button>
+      <button type="button" data-bs-target="#megaCarousel" data-bs-slide-to="4"></button>
+    </div>
+
+    <div class="carousel-inner">
+      <div class="carousel-item active" style="background-image: url('./Climate Summit Breakthrough.jpg');">
+        <div class="carousel-overlay"></div>
+        <div class="carousel-caption text-center">
+          <h3>🌍 Climate Summit Breakthrough</h3>
+          <p>Global leaders unite for zero-emission goals at Geneva 2025. Agreements reached with historic impact.</p>
+          <a href="#" class="btn btn-sm">Read More</a>
+        </div>
+      </div>
+
+      <div class="carousel-item" style="background-image: url('./Record Voter Turnout.jpg');">
+        <div class="carousel-overlay"></div>
+        <div class="carousel-caption text-center">
+          <h3>🗳️ Record Voter Turnout</h3>
+          <p>Citizens drive change with the highest participation in a national election in decades.</p>
+          <a href="#" class="btn btn-sm">View Story</a>
+        </div>
+      </div>
+
+      <div class="carousel-item" style="background-image: url('./Future of AI Unleashed.jpg');">
+        <div class="carousel-overlay"></div>
+        <div class="carousel-caption text-center">
+          <h3>🤖 Future of AI Unleashed</h3>
+          <p>Top companies release revolutionary AI tools — transforming business, education & medicine.</p>
+          <a href="#" class="btn btn-sm">Explore</a>
+        </div>
+      </div>
+
+      <div class="carousel-item" style="background-image: url('./World Cup Victory!.jpg');">
+        <div class="carousel-overlay"></div>
+        <div class="carousel-caption text-center">
+          <h3>🏆 World Cup Victory!</h3>
+          <p>India celebrates as it secures a dramatic win in the 2025 Cricket World Cup final.</p>
+          <a href="#" class="btn btn-sm">Match Highlights</a>
+        </div>
+      </div>
+
+      <div class="carousel-item" style="background-image: url('./Markets Surge.jpg');">
+        <div class="carousel-overlay"></div>
+        <div class="carousel-caption text-center">
+          <h3>📈 Markets Surge</h3>
+          <p>Global markets hit record highs as new tech and trade deals fuel investor confidence.</p>
+          <a href="#" class="btn btn-sm">Market Report</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <section id="categories" class="container my-4">
+    <h2 class="section-heading">🗂 Top Headlines by Category</h2>
+
+    <div class="nav-tabs-custom">
+      <a href="#world">🌍 World</a>
+      <a href="#india">🇮🇳 India</a>
+      <a href="#tech">💻 Tech</a>
+      <a href="#biz">📈 Business</a>
+      <a href="#health">🩺 Health</a>
+    </div>
+
+    <div id="world" class="category-tab">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./Global Mission Launched.jpg" alt="World">
+            <div class="p-3">
+              <h5 class="news-title">Global Mission Launched</h5>
+              <p class="news-text">New climate treaty signed by 80+ countries in space pact.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./Earth Day Summit.jpg" alt="World">
+            <div class="p-3">
+              <h5 class="news-title">Earth Day Summit</h5>
+              <p class="news-text">Nations agree to reduce emissions by 2040 during major summit.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./World Leaders Meet.jpg" alt="World">
+            <div class="p-3">
+              <h5 class="news-title">World Leaders Meet</h5>
+              <p class="news-text">Leaders unite for peace talks and tech collaboration initiatives.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="india" class="category-tab">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./Digital Bharat Drive.jpg" alt="India">
+            <div class="p-3">
+              <h5 class="news-title">Digital Bharat Drive</h5>
+              <p class="news-text">India boosts rural tech with space-inspired education tools.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./Startup Surge.jpg" alt="India">
+            <div class="p-3">
+              <h5 class="news-title">Startup Surge</h5>
+              <p class="news-text">Indian startups see 150% growth amid global AI demand.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./ISRO Innovation.jpg" alt="India">
+            <div class="p-3">
+              <h5 class="news-title">ISRO Innovation</h5>
+              <p class="news-text">New ISRO satellite launch redefines tele-education coverage.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tech" class="category-tab">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./AI in Shuttle Control.jpg" alt="Tech">
+            <div class="p-3">
+              <h5 class="news-title">AI in Shuttle Control</h5>
+              <p class="news-text">AI bots now manage critical satellite launches.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./Robotics Upgrade.jpg" alt="Tech">
+            <div class="p-3">
+              <h5 class="news-title">Robotics Upgrade</h5>
+              <p class="news-text">Futuristic robotic arms tested in low-earth orbit lab.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./Cloud AI Push.jpg" alt="Tech">
+            <div class="p-3">
+              <h5 class="news-title">Cloud AI Push</h5>
+              <p class="news-text">Major cloud providers offer satellite-backed AI processing.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="biz" class="category-tab">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./Space Stocks Soar.jpg" alt="Business">
+            <div class="p-3">
+              <h5 class="news-title">Space Stocks Soar</h5>
+              <p class="news-text">Aerospace companies hit all-time highs in market rally.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./IPO in Orbit.jpg" alt="Business">
+            <div class="p-3">
+              <h5 class="news-title">IPO in Orbit</h5>
+              <p class="news-text">First satellite internet company announces public listing.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./Cosmic Economy.jpg" alt="Business">
+            <div class="p-3">
+              <h5 class="news-title">Cosmic Economy</h5>
+              <p class="news-text">Analysts predict $10 trillion global space economy by 2035.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="health" class="category-tab">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./Zero-Gravity MedTech.jpg" alt="Health">
+            <div class="p-3">
+              <h5 class="news-title">Zero-Gravity MedTech</h5>
+              <p class="news-text">Doctors test remote surgery with space-grade robots.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./Space Labs Heal.jpg" alt="Health">
+            <div class="p-3">
+              <h5 class="news-title">Space Labs Heal</h5>
+              <p class="news-text">Anti-aging experiments in orbit show breakthrough results.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card news-card">
+            <img src="./Smart ICU Units.jpg" alt="Health">
+            <div class="p-3">
+              <h5 class="news-title">Smart ICU Units</h5>
+              <p class="news-text">AI monitors patients in isolated modules during spaceflight.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- FEATURED ARTICLES -->
+  <div class="container my-5">
+    <h2 class="section-title text-white">🌟 Featured Articles</h2>
+    <div class="row g-4">
+      <div class="col-md-4 col-sm-6">
+        <div class="card position-relative">
+          <span class="icon-top-left"><i class="bi bi-list"></i></span>
+          <span class="icon-top-right"><i class="bi bi-x-lg"></i></span>
+          <img src="./Life on Mars.jpg" class="card-img-top" alt="Article 1">
+          <div class="card-body">
+            <h5 class="card-title">Life on Mars: New Clues Found</h5>
+            <p class="card-text">Scientists discover organic molecules deep beneath Martian surface.</p>
+            <a href="#" class="btn btn-outline-primary btn-sm">Read More</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card position-relative">
+          <span class="icon-top-left"><i class="bi bi-list"></i></span>
+          <span class="icon-top-right"><i class="bi bi-x-lg"></i></span>
+          <img src="./The Rise of Quantum Internet.jpg" class="card-img-top" alt="Article 2">
+          <div class="card-body">
+            <h5 class="card-title">The Rise of Quantum Internet</h5>
+            <p class="card-text">Next-gen communication systems are being tested worldwide.</p>
+            <a href="#" class="btn btn-outline-primary btn-sm">Read More</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card position-relative">
+          <span class="icon-top-left"><i class="bi bi-list"></i></span>
+          <span class="icon-top-right"><i class="bi bi-x-lg"></i></span>
+          <img src="./Startup Economy Booms.jpg" class="card-img-top" alt="Article 3">
+          <div class="card-body">
+            <h5 class="card-title">Startup Economy Booms</h5>
+            <p class="card-text">Tech startups raise record funding amid global demand for innovation.</p>
+            <a href="#" class="btn btn-outline-primary btn-sm">Read More</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MAIN / SIDEBAR -->
+  <div class="container my-4">
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="p-4 bg-white bg-opacity-5 rounded shadow-sm mb-4">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <h3 style="color:#ff6b6b;">Main News Area</h3>
+              <p style="color:#d0d6db;">This area is for your main articles, hero section, featured news, etc. You can write headlines, summaries, or call-to-actions here.</p>
+            </div>
+
+            <div class="col-md-6 image-side mb-4 text-center">
+              <img src="./news.png" alt="Sidebar Feature" class="img-fluid rounded shadow" style="max-height:220px;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <!-- Trending Now -->
+        <div class="sidebar-section">
+          <div class="sidebar-title">🔥 Trending Now</div>
+          <div class="trending-item">
+            <i class="bi bi-lightning-charge trending-icon"></i>
+            <div class="trending-text">Chandrayaan-4 set to launch <span class="badge bg-info text-dark ms-2">NEW</span></div>
+          </div>
+          <div class="trending-item">
+            <i class="bi bi-graph-up trending-icon"></i>
+            <div class="trending-text">Global stocks rally amid tech surge</div>
+          </div>
+          <div class="trending-item">
+            <i class="bi bi-globe trending-icon"></i>
+            <div class="trending-text">UN climate summit concludes in Geneva</div>
+          </div>
+        </div>
+
+        <!-- Most Read -->
+        <div class="sidebar-section">
+          <div class="sidebar-title">📈 Most Read</div>
+          <div class="trending-item"><i class="bi bi-bookmark-star trending-icon"></i><div class="trending-text">Top 10 apps reshaping education in 2025</div></div>
+          <div class="trending-item"><i class="bi bi-bookmark-star trending-icon"></i><div class="trending-text">How AI is transforming rural India</div></div>
+          <div class="trending-item"><i class="bi bi-bookmark-star trending-icon"></i><div class="trending-text">Apple's mixed reality headset reviewed</div></div>
+        </div>
+
+        <!-- Editor's Pick -->
+        <div class="sidebar-section">
+          <div class="sidebar-title">📝 Editor's Pick</div>
+          <div class="trending-item"><i class="bi bi-star-fill trending-icon"></i><div class="trending-text">5 strategies to combat digital fatigue</div></div>
+          <div class="trending-item"><i class="bi bi-star-fill trending-icon"></i><div class="trending-text">How ISRO quietly became a global leader</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Counters -->
+  <div class="section-container">
+    <div class="counter-box me-3">
+      <div class="counter subscribers">0</div>
+      <div class="label">Subscribers</div>
+    </div>
+    <div class="counter-box">
+      <div class="counter reviews">0</div>
+      <div class="label">Customer Reviews</div>
+    </div>
+  </div>
+
+  <!-- Subscribe Form -->
+  <div class="container">
+    <div class="row justify-content-center mt-4">
+      <div class="col-md-8 col-lg-6">
+        <div class="glass-card text-center p-4">
+          <div class="newsletter-icon mb-2">
+            <i class="bi bi-send-fill fs-2 text-info"></i>
+          </div>
+          <h2 class="text-info fw-bold">Subscribe Now</h2>
+          <p class="text-light">Stay updated with top stories, latest news & more delivered to your inbox!</p>
+
+          <form id="subscribeForm">
+            <div class="input-group mt-3">
+              <input type="email" class="form-control" id="emailInput" placeholder="Enter your email" required>
+              <button class="btn btn-subscribe" type="submit">Subscribe</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subscribe Modal -->
+  <div class="modal fade" id="subscribeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content pop-animation">
+        <div class="modal-header">
+          <h5 class="modal-title">🎉 Subscription Successful!</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center">
+          <p>Thank you for subscribing! 🎊</p>
+          <p>You will now receive updates straight to your inbox.</p>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer mt-5">
+    <div class="container">
+      <div class="row gy-4">
+        <div class="col-md-4">
+          <h5>Quick Links</h5>
+          <a href="#">Home</a>
+          <a href="#">World News</a>
+          <a href="#">Technology</a>
+          <a href="#">Sports</a>
+        </div>
+        <div class="col-md-4">
+          <h5>Contact Info</h5>
+          <p><i class="bi bi-geo-alt-fill me-2"></i>123 News Street, Chennai, India</p>
+          <p><i class="bi bi-envelope-fill me-2"></i>info@mynews24.com</p>
+          <p><i class="bi bi-telephone-fill me-2"></i>+91 98765 43210</p>
+        </div>
+        <div class="col-md-4">
+          <h5>Follow Us</h5>
+          <div class="d-flex social-icons">
+            <a href="#" class="me-2"><i class="bi bi-facebook"></i></a>
+            <a href="#" class="me-2"><i class="bi bi-twitter-x"></i></a>
+            <a href="#" class="me-2"><i class="bi bi-instagram"></i></a>
+            <a href="#" class="me-2"><i class="bi bi-youtube"></i></a>
+            <a href="#"><i class="bi bi-linkedin"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom mt-4">
+        © 2025 MyNews24 — All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+</div> <!-- end mainContent -->
+
+<!-- BOOTSTRAP + CONFETTI -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+  // ---------- AUTH LOGIC ----------
+  let isLogin = true;
+
+  const authSection = document.getElementById('authSection');
+  const mainContent = document.getElementById('mainContent');
+  const authTitle = document.getElementById('authTitle');
+  const authBtn = document.getElementById('authBtn');
+  const switchText = document.getElementById('switchText');
+  const switchLink = document.getElementById('switchLink');
+  const authForm = document.getElementById('authForm');
+
+  // initialize switchLink text
+  switchText.textContent = "Don't have an account? ";
+  switchLink.textContent = "Register";
+
+  // If already logged in
+  if (localStorage.getItem('loggedIn') === 'true') {
+    showMain();
+  }
+
+  // Toggle between Login / Register
+  switchLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    isLogin = !isLogin;
+    if (isLogin) {
+      authTitle.textContent = 'Login';
+      authBtn.textContent = 'Login';
+      switchText.textContent = "Don't have an account? ";
+      switchLink.textContent = "Register";
+    } else {
+      authTitle.textContent = 'Register';
+      authBtn.textContent = 'Register';
+      switchText.textContent = "Already have an account? ";
+      switchLink.textContent = "Login";
+    }
+  });
+
+  authForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (isLogin) {
+      const savedEmail = localStorage.getItem('email');
+      const savedPass = localStorage.getItem('password');
+      if (email === savedEmail && password === savedPass) {
+        localStorage.setItem('loggedIn', 'true');
+        showMain();
+      } else {
+        alert('Invalid credentials');
+      }
+    } else {
+      // simple register (localStorage) - for demo only
+      localStorage.setItem('email', email);
+      localStorage.setItem('password', password);
+      localStorage.setItem('loggedIn', 'true');
+      showMain();
+    }
+  });
+
+  // Logout
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'logoutBtn') {
+      localStorage.setItem('loggedIn', 'false');
+      mainContent.style.display = 'none';
+      authSection.style.display = 'flex';
+    }
+  });
+
+  function showMain() {
+    authSection.style.display = 'none';
+    mainContent.style.display = 'block';
+    window.scrollTo(0,0);
+  }
+
+  // ---------- SUBSCRIBE FORM ----------
+  document.getElementById("subscribeForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let email = document.getElementById("emailInput").value.trim();
+    if (email === "") {
+      alert("Please enter your email!");
+      return;
+    }
+
+    let subscribeModal = new bootstrap.Modal(document.getElementById("subscribeModal"));
+    subscribeModal.show();
+
+    document.getElementById("emailInput").value = "";
+
+    // Confetti
+    setTimeout(() => {
+      confetti({ particleCount: 180, spread: 80, origin: { y: 0.6 } });
+      confetti({ particleCount: 100, spread: 60, origin: { x: 0 }, angle: 60 });
+      confetti({ particleCount: 100, spread: 60, origin: { x: 1 }, angle: 120 });
+
+      let sparkleInterval = setInterval(() => {
+        confetti({ particleCount: 20, startVelocity: 30, spread: 360, ticks: 60, origin: { x: Math.random(), y: Math.random() - 0.2 } });
+      }, 200);
+      setTimeout(() => clearInterval(sparkleInterval), 2000);
+    }, 250);
+  });
+
+  // ---------- SLOW COUNTERS ----------
+  function slowCounter(element, start, speed, max) {
+    let count = start;
+    function update() {
+      count += Math.floor(Math.random() * speed) + 1;
+      if (count > max) count = max;
+      element.textContent = count.toLocaleString();
+      if (count < max) setTimeout(update, 100);
+    }
+    update();
+  }
+
+  // Start counters
+  document.addEventListener('DOMContentLoaded', function() {
+    slowCounter(document.querySelector(".counter.subscribers"), 0, 5, 30000);
+    slowCounter(document.querySelector(".counter.reviews"), 0, 2, 1500);
+  });
+
+</script>
+
+</body>
+</html>
